@@ -23,9 +23,9 @@ jobs:
           ref: 15.0.0-sultan
           path: kernel
 
-      - name: Modify kernel version
+      - name: Modify kernel version in defconfig
         run: |
-          echo 'CONFIG_LOCALVERSION="-${{ env.KERNEL_NAME }}"' >> kernel/arch/arm64/configs/google/proton_defconfig
+          sed -i 's/CONFIG_LOCALVERSION=".*"/CONFIG_LOCALVERSION="-${{ env.KERNEL_NAME }}"/' kernel/arch/arm64/configs/zuma_defconfig
 
       - name: Modify Makefile EXTRAVERSION
         run: |
@@ -35,12 +35,12 @@ jobs:
         uses: dabao1955/kernel_build_action@main
         with:
           kernel-dir: kernel
-          config: google/proton_defconfig
+          config: zuma_defconfig
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
-          android-version: 14
-          aosp-clang-version: r450784d
+          android-version: 15
+          aosp-clang-version: r487747
           anykernel3: true
           release: true
           access-token: ${{ secrets.GITHUB_TOKEN }}
