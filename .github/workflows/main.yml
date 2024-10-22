@@ -40,7 +40,8 @@ jobs:
           aosp-gcc: true
           aosp-clang: true
           android-version: 15
-          aosp-clang-version: r498229
+          aosp-clang-version: false
+          other-clang-url: https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/7775eb113f960bc69a780b621d03a715914d4bca.tar.gz
           anykernel3: true
           release: true
           access-token: ${{ secrets.GITHUB_TOKEN }}
