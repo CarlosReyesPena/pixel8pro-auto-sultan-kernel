@@ -25,11 +25,11 @@ jobs:
 
       - name: Modify kernel version
         run: |
-          echo 'CONFIG_LOCALVERSION="-${{ env.KERNEL_NAME }}"' >> arch/arm64/configs/zuma_defconfig
+          echo 'CONFIG_LOCALVERSION="-${{ env.KERNEL_NAME }}"' >> kernel/arch/arm64/configs/zuma_defconfig
 
       - name: Modify Makefile EXTRAVERSION
         run: |
-          sed -i 's/^EXTRAVERSION =.*/EXTRAVERSION = -${{ env.KERNEL_NAME }}/' Makefile
+          sed -i 's/^EXTRAVERSION =.*/EXTRAVERSION = -${{ env.KERNEL_NAME }}/' kernel/Makefile
 
       - name: Build Kernel
         uses: dabao1955/kernel_build_action@main
