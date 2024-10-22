@@ -19,7 +19,7 @@ jobs:
       - name: Checkout kernel source
         uses: actions/checkout@v3
         with:
-          repository: sultanxda/android_kernel_google_zuma
+          repository: kerneltoast/android_kernel_google_zuma
           ref: 15.0.0-sultan
           path: kernel
 
