@@ -19,7 +19,7 @@ jobs:
       - name: Checkout kernel source
         uses: actions/checkout@v3
         with:
-          repository: kerneltoast/android_kernel_google_zuma
+          repository: sultanxda/android_kernel_google_zuma
           ref: 15.0.0-sultan
           path: kernel
 
@@ -39,8 +39,8 @@ jobs:
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
-          android-version: 15
-          aosp-clang-version: r487747
+          android-version: 14
+          aosp-clang-version: r450784d
           anykernel3: true
           release: true
           access-token: ${{ secrets.GITHUB_TOKEN }}
