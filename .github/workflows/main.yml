@@ -1,21 +1,77 @@
-name: CI
+name: Build Kernel
 
 on:
   workflow_dispatch:
+    inputs:
+      kernel_name:
+        description: 'Nom du kernel'
+        required: true
+        default: 'AutoSult'
 
 jobs:
   build-kernel:
     name: Build Kernel
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
+    env:
+      KERNEL_NAME: ${{ github.event.inputs.kernel_name }}
+
     steps:
-      - name: Build
-        uses: dabao1955/kernel_build_action@main
+      - name: Checkout kernel source
+        uses: actions/checkout@v3
         with:
-          kernel-url: https://github.com/kerneltoast/android_kernel_google_zuma
-          kernel-branch: 15.0.0-sultan
-          config: zuma_defconfig
-          arch: arm64
-          aosp-gcc: true
-          aosp-clang: true
-          android-version: 14
-          aosp-clang-version: r530567
+          repository: kerneltoast/android_kernel_google_zuma
+          ref: android14-5.15
+          path: kernel
+
+      - name: Modify kernel version in defconfig
+        run: |
+          sed -i 's/CONFIG_LOCALVERSION=".*"/CONFIG_LOCALVERSION="-${{ env.KERNEL_NAME }}"/' kernel/arch/arm64/configs/zuma_defconfig
+
+      - name: Modify Makefile EXTRAVERSION
+        run: |
+          sed -i 's/^EXTRAVERSION =.*/EXTRAVERSION = -${{ env.KERNEL_NAME }}/' kernel/Makefile
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc bison build-essential ccache flex libncurses5-dev libssl-dev wget zip
+
+      - name: Download and extract Clang
+        run: |
+          wget https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.2/clang+llvm-17.0.2-x86_64-linux-gnu-ubuntu-22.04.tar.xz
+          tar -xf clang+llvm-17.0.2-x86_64-linux-gnu-ubuntu-22.04.tar.xz
+          mv clang+llvm-17.0.2-x86_64-linux-gnu-ubuntu-22.04 clang
+        shell: bash
+
+      - name: Set up environment variables for build
+        run: |
+          echo "KERNEL_DIR=$(pwd)/kernel" >> $GITHUB_ENV
+          echo "CLANG_DIR=$(pwd)/clang" >> $GITHUB_ENV
+          echo 'PATH=$CLANG_DIR/bin:$PATH' >> $GITHUB_ENV
+          echo 'CROSS_COMPILE=$CLANG_DIR/bin/aarch64-linux-gnu-' >> $GITHUB_ENV
+          echo 'ARCH=arm64' >> $GITHUB_ENV
+          echo 'SUBARCH=arm64' >> $GITHUB_ENV
+          echo 'CC=clang' >> $GITHUB_ENV
+          echo 'LD=ld.lld' >> $GITHUB_ENV
+        shell: bash
+
+      - name: Build Kernel
+        run: |
+          cd $KERNEL_DIR
+          make O=out ARCH=arm64 zuma_defconfig
+          make -j$(nproc) O=out ARCH=arm64
+        shell: bash
+
+      - name: Package Kernel with AnyKernel3
+        run: |
+          git clone --depth=1 https://github.com/osm0sis/AnyKernel3.git
+          cp $KERNEL_DIR/out/arch/arm64/boot/Image.gz-dtb AnyKernel3/
+          cd AnyKernel3
+          zip -r9 "../${{ env.KERNEL_NAME }}-kernel.zip" *
+        shell: bash
+
+      - name: Upload kernel
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.KERNEL_NAME }}-kernel
+          path: ${{ env.KERNEL_NAME }}-kernel.zip
