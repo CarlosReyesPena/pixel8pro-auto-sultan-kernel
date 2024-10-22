@@ -11,7 +11,7 @@ on:
 jobs:
   build-kernel:
     name: Build Kernel
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04  # Mise à jour vers Ubuntu 22.04 pour un environnement plus récent
     env:
       KERNEL_NAME: ${{ github.event.inputs.kernel_name }}
 
@@ -31,16 +31,49 @@ jobs:
         run: |
           sed -i 's/^EXTRAVERSION =.*/EXTRAVERSION = -${{ env.KERNEL_NAME }}/' kernel/Makefile
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc bison build-essential ccache flex libncurses5-dev libssl-dev wget zip
+
+      - name: Download and extract Clang
+        run: |
+          mkdir -p clang
+          wget -O clang.tar.gz "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/7775eb113f960bc69a780b621d03a715914d4bca.tar.gz"
+          tar -xzf clang.tar.gz -C clang
+          # Rendre les binaires exécutables
+          chmod +x clang/bin/*
+        shell: bash
+
+      - name: Set up environment variables for build
+        run: |
+          echo "KERNEL_DIR=$(pwd)/kernel" >> $GITHUB_ENV
+          echo "CLANG_DIR=$(pwd)/clang" >> $GITHUB_ENV
+          echo 'PATH=$CLANG_DIR/bin:$PATH' >> $GITHUB_ENV
+          echo 'CROSS_COMPILE=$CLANG_DIR/bin/aarch64-linux-android-' >> $GITHUB_ENV
+          echo 'ARCH=arm64' >> $GITHUB_ENV
+          echo 'SUBARCH=arm64' >> $GITHUB_ENV
+          echo 'CC=clang' >> $GITHUB_ENV
+          echo 'LD=ld.lld' >> $GITHUB_ENV
+        shell: bash
+
       - name: Build Kernel
-        uses: dabao1955/kernel_build_action@main
+        run: |
+          cd $KERNEL_DIR
+          make O=out ARCH=arm64 zuma_defconfig
+          make -j$(nproc) O=out ARCH=arm64
+        shell: bash
+
+      - name: Package Kernel with AnyKernel3
+        run: |
+          git clone --depth=1 https://github.com/osm0sis/AnyKernel3.git
+          cp $KERNEL_DIR/out/arch/arm64/boot/Image.gz-dtb AnyKernel3/
+          cd AnyKernel3
+          zip -r9 "../${{ env.KERNEL_NAME }}-kernel.zip" *
+        shell: bash
+
+      - name: Upload kernel
+        uses: actions/upload-artifact@v3
         with:
-          kernel-dir: kernel
-          config: zuma_defconfig
-          arch: arm64
-          aosp-gcc: true
-          aosp-clang: true
-          android-version: 14
-          aosp-clang-version: r450784d
-          anykernel3: true
-          release: true
-          access-token: ${{ secrets.GITHUB_TOKEN }}
+          name: ${{ env.KERNEL_NAME }}-kernel
+          path: ${{ env.KERNEL_NAME }}-kernel.zip
