@@ -1,0 +1,46 @@
+name: Build Kernel
+
+on:
+  workflow_dispatch:
+    inputs:
+      kernel_name:
+        description: 'Auto build of sultAn kernel'
+        required: true
+        default: 'autoSult'
+
+jobs:
+  build-kernel:
+    name: Build Kernel
+    runs-on: ubuntu-20.04
+    env:
+      KERNEL_NAME: ${{ github.event.inputs.kernel_name }}
+
+    steps:
+      - name: Checkout kernel source
+        uses: actions/checkout@v3
+        with:
+          repository: kerneltoast/android_kernel_google_zuma
+          ref: android14-5.15
+          path: kernel
+
+      - name: Modify kernel version
+        run: |
+          echo 'CONFIG_LOCALVERSION="-${{ env.KERNEL_NAME }}"' >> kernel/arch/arm64/configs/zuma_defconfig
+
+      - name: Modify Makefile EXTRAVERSION
+        run: |
+          sed -i 's/^EXTRAVERSION =.*/EXTRAVERSION = -${{ env.KERNEL_NAME }}/' kernel/Makefile
+
+      - name: Build Kernel
+        uses: dabao1955/kernel_build_action@main
+        with:
+          kernel-dir: kernel
+          config: zuma_defconfig
+          arch: arm64
+          aosp-gcc: true
+          aosp-clang: true
+          android-version: 14
+          aosp-clang-version: r450784d
+          anykernel3: true
+          release: true
+          access-token: ${{ secrets.GITHUB_TOKEN }}
