@@ -19,13 +19,13 @@ jobs:
       - name: Checkout kernel source
         uses: actions/checkout@v3
         with:
-          repository: kerneltoast/android_kernel_google_zuma
-          ref: android14-5.15
+          repository: sultanxda/android_kernel_google_zuma
+          ref: 15.0.0-sultan
           path: kernel
 
       - name: Modify kernel version
         run: |
-          echo 'CONFIG_LOCALVERSION="-${{ env.KERNEL_NAME }}"' >> kernel/arch/arm64/configs/zuma_defconfig
+          echo 'CONFIG_LOCALVERSION="-${{ env.KERNEL_NAME }}"' >> kernel/arch/arm64/configs/google/proton_defconfig
 
       - name: Modify Makefile EXTRAVERSION
         run: |
@@ -35,7 +35,7 @@ jobs:
         uses: dabao1955/kernel_build_action@main
         with:
           kernel-dir: kernel
-          config: zuma_defconfig
+          config: google/proton_defconfig
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
