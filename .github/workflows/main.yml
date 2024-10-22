@@ -21,6 +21,7 @@ jobs:
         with:
           repository: kerneltoast/android_kernel_google_zuma
           ref: 15.0.0-sultan
+          path: kernel
 
       - name: Modify kernel version
         run: |
