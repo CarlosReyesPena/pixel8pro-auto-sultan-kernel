@@ -34,7 +34,6 @@ jobs:
       - name: Build Kernel
         uses: dabao1955/kernel_build_action@main
         with:
-          kernel-dir: kernel
           config: zuma_defconfig
           arch: arm64
           aosp-gcc: true
