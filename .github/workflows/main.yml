@@ -22,7 +22,7 @@ jobs:
         with:
           repository: kerneltoast/android_kernel_google_zuma
           ref: 15.0.0-sultan
-          path: .  # Cloner directement à la racine du répertoire de travail
+          path: .
 
       # Étape 2: Vérifier le contenu du répertoire après le clonage
       - name: List Kernel Directory
@@ -46,7 +46,7 @@ jobs:
       - name: Build Kernel
         uses: dabao1955/kernel_build_action@main
         with:
-          kernel-dir: .  # Utiliser le répertoire courant comme répertoire du kernel
+          kernel-dir: .  # Mise à jour pour pointer vers le répertoire racine
           config: zuma_defconfig
           arch: arm64
           aosp-gcc: true
