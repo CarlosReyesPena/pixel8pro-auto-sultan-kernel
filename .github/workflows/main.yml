@@ -20,7 +20,6 @@ jobs:
           config: zuma_defconfig
           arch: arm64
           other-clang-url: https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/7775eb113f960bc69a780b621d03a715914d4bca.tar.gz
-          disable-lto: true
           anykernel3: true
           release: true
           access-token: ${{ secrets.GITHUB_TOKEN }}
