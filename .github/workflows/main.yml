@@ -16,6 +16,7 @@ jobs:
       KERNEL_NAME: ${{ github.event.inputs.kernel_name }}
 
     steps:
+      # Étape 1: Cloner le dépôt du kernel
       - name: Checkout kernel source
         uses: actions/checkout@v3
         with:
@@ -23,17 +24,29 @@ jobs:
           ref: 15.0.0-sultan
           path: kernel
 
+      # Étape 2: Vérifier le contenu du répertoire après le clonage
+      - name: List Kernel Directory
+        run: ls -la kernel
+
+      # Étape 3: Modifier la version du kernel dans le defconfig
       - name: Modify kernel version
         run: |
           echo 'CONFIG_LOCALVERSION="-${{ env.KERNEL_NAME }}"' >> kernel/arch/arm64/configs/zuma_defconfig
 
+      # Étape 4: Modifier le fichier Makefile pour changer l'EXTRAVERSION
       - name: Modify Makefile EXTRAVERSION
         run: |
           sed -i 's/^EXTRAVERSION =.*/EXTRAVERSION = -${{ env.KERNEL_NAME }}/' kernel/Makefile
 
+      # Étape 5: Vérifier le contenu du répertoire avant de lancer la compilation
+      - name: List Kernel Directory Before Build
+        run: ls -la kernel
+
+      # Étape 6: Construire le kernel
       - name: Build Kernel
         uses: dabao1955/kernel_build_action@main
         with:
+          kernel-dir: kernel  # Spécifier le répertoire du kernel pour éviter le problème de 'kernel/kernel'
           config: zuma_defconfig
           arch: arm64
           aosp-gcc: true
