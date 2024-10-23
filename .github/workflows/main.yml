@@ -22,31 +22,31 @@ jobs:
         with:
           repository: kerneltoast/android_kernel_google_zuma
           ref: 15.0.0-sultan
-          path: kernel
+          path: kernel_source  # Changer le nom du répertoire pour éviter les conflits
 
       # Étape 2: Vérifier le contenu du répertoire après le clonage
       - name: List Kernel Directory
-        run: ls -la kernel
+        run: ls -la kernel_source
 
       # Étape 3: Modifier la version du kernel dans le defconfig
       - name: Modify kernel version
         run: |
-          echo 'CONFIG_LOCALVERSION="-${{ env.KERNEL_NAME }}"' >> kernel/arch/arm64/configs/zuma_defconfig
+          echo 'CONFIG_LOCALVERSION="-${{ env.KERNEL_NAME }}"' >> kernel_source/arch/arm64/configs/zuma_defconfig
 
       # Étape 4: Modifier le fichier Makefile pour changer l'EXTRAVERSION
       - name: Modify Makefile EXTRAVERSION
         run: |
-          sed -i 's/^EXTRAVERSION =.*/EXTRAVERSION = -${{ env.KERNEL_NAME }}/' kernel/Makefile
+          sed -i 's/^EXTRAVERSION =.*/EXTRAVERSION = -${{ env.KERNEL_NAME }}/' kernel_source/Makefile
 
       # Étape 5: Vérifier le contenu du répertoire avant de lancer la compilation
       - name: List Kernel Directory Before Build
-        run: ls -la kernel
+        run: ls -la kernel_source
 
       # Étape 6: Construire le kernel
       - name: Build Kernel
         uses: dabao1955/kernel_build_action@main
         with:
-          kernel-dir: kernel  # Spécifier le répertoire du kernel pour éviter le problème de 'kernel/kernel'
+          kernel-dir: kernel_source  # Mettre à jour le chemin du répertoire du kernel
           config: zuma_defconfig
           arch: arm64
           aosp-gcc: true
