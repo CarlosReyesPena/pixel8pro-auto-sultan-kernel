@@ -20,10 +20,11 @@ jobs:
           kernel-branch: 15.0.0-sultan
           config: zuma_defconfig
           arch: arm64
-          aosp-gcc: true
+          aosp-gcc: false  # Désactiver GCC
           aosp-clang: true
           other-clang-url: https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/7775eb113f960bc69a780b621d03a715914d4bca.tar.gz
           disable-lto: true
           anykernel3: true
           release: true
           access-token: ${{ secrets.GITHUB_TOKEN }}
+          extra-cmd: "-j$(nproc)"
